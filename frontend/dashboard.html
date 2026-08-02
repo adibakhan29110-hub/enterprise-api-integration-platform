@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Enterprise API Integration Platform</title>
+<style>
+  :root{
+    --bg:#0B1220;
+    --panel:#111B2E;
+    --panel-2:#0E1728;
+    --line:#1F2E47;
+    --text:#DCE6F5;
+    --dim:#7C8FAE;
+    --accent:#3DDCB0;
+    --accent-dim:#1F5D4C;
+    --warn:#F2B84B;
+    --danger:#F26D6D;
+    --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+    --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(61,220,176,0.07), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:28px;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:30px;height:30px;border-radius:7px;
+    background:linear-gradient(135deg,var(--accent),#1F8F6E);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-weight:700;color:#03150F;font-size:15px;
+  }
+  .brand-name{font-weight:600;font-size:16px;letter-spacing:0.2px;}
+  .brand-sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px;letter-spacing:0.5px;}
+  .status-pill{
+    display:flex;align-items:center;gap:7px;
+    font-family:var(--mono);font-size:11.5px;color:var(--accent);
+    background:rgba(61,220,176,0.08);border:1px solid var(--accent-dim);
+    padding:6px 12px;border-radius:20px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(61,220,176,0.5);}50%{opacity:0.6;box-shadow:0 0 0 4px rgba(61,220,176,0);}}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .stat{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .stat-label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+  .stat-value{font-family:var(--mono);font-size:26px;font-weight:600;}
+  .stat-delta{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:6px;}
+  .stat-delta.warn{color:var(--warn);}
+
+  .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:16px;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;
+  }
+  .panel-title{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:13px;font-weight:600;margin-bottom:16px;
+  }
+  .panel-title .sub{font-family:var(--mono);font-size:10.5px;color:var(--dim);font-weight:400;}
+
+  /* ---- Signature element: live sync flow diagram ---- */
+  .flow{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:8px;
+    padding:22px 18px;margin-bottom:16px;position:relative;
+  }
+  .flow-node{
+    display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;width:78px;
+  }
+  .node-box{
+    width:52px;height:52px;border-radius:10px;background:var(--panel);
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;color:var(--accent);
+  }
+  .node-box.core{
+    border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,220,176,0.08);
+    background:linear-gradient(160deg,#132A24,var(--panel));
+  }
+  .node-label{font-size:10px;color:var(--dim);text-align:center;line-height:1.3;font-family:var(--mono);}
+  .flow-line{flex:1;height:1px;background:var(--line);position:relative;margin:0 4px;top:-13px;}
+  .flow-line::after{
+    content:'';position:absolute;top:-2px;width:5px;height:5px;border-radius:50%;
+    background:var(--accent);animation:travel 2.6s linear infinite;box-shadow:0 0 6px var(--accent);
+  }
+  .flow-line.rev::after{animation-direction:reverse;}
+  @keyframes travel{0%{left:0%;}100%{left:97%;}}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{
+    text-align:left;font-size:10.5px;color:var(--dim);text-transform:uppercase;
+    letter-spacing:0.5px;font-weight:500;padding:8px 6px;border-bottom:1px solid var(--line);
+  }
+  td{padding:10px 6px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;}
+  tr:last-child td{border-bottom:none;}
+  .svc{display:flex;align-items:center;gap:8px;font-family:var(--sans);}
+  .svc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .ok{background:var(--accent);}
+  .deg{background:var(--warn);}
+  .down{background:var(--danger);}
+  .badge{
+    font-size:10.5px;padding:3px 8px;border-radius:5px;font-family:var(--mono);
+  }
+  .badge.ok{background:rgba(61,220,176,0.1);color:var(--accent);}
+  .badge.deg{background:rgba(242,184,75,0.1);color:var(--warn);}
+  .badge.down{background:rgba(242,109,109,0.1);color:var(--danger);}
+
+  .log{font-family:var(--mono);font-size:11.5px;line-height:2.1;max-height:260px;overflow:hidden;}
+  .log-row{display:flex;gap:10px;color:var(--dim);}
+  .log-time{color:#4A5C7A;flex-shrink:0;}
+  .log-tag{flex-shrink:0;width:64px;}
+  .log-tag.sync{color:var(--accent);}
+  .log-tag.auth{color:#7AA6E0;}
+  .log-tag.err{color:var(--danger);}
+
+  .bars{display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:6px;}
+  .bar{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent-dim));border-radius:3px 3px 0 0;opacity:0.85;}
+  .bar-labels{display:flex;gap:6px;margin-top:6px;}
+  .bar-labels span{flex:1;text-align:center;font-size:9.5px;color:var(--dim);font-family:var(--mono);}
+
+  .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+  .svc-card{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;
+  }
+  .svc-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .svc-card-name{font-size:12.5px;font-weight:600;}
+  .svc-card-meta{font-family:var(--mono);font-size:10.5px;color:var(--dim);}
+  .svc-card-meta b{color:var(--text);font-weight:500;}
+
+  footer{margin-top:20px;text-align:center;font-family:var(--mono);font-size:10.5px;color:#3A4A66;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div>
+        <div class="brand-name">Enterprise API Integration Platform</div>
+        <div class="brand-sub">FASTAPI · POSTGRESQL · DOCKER · JWT / OAUTH 2.0</div>
+      </div>
+    </div>
+    <div class="status-pill"><span class="dot"></span>ALL SYSTEMS SYNCED</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Connected Systems</div>
+      <div class="stat-value">12</div>
+      <div class="stat-delta">+2 this month</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Records Synced / 24h</div>
+      <div class="stat-value">48.2K</div>
+      <div class="stat-delta">99.97% success rate</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Manual Effort Reduced</div>
+      <div class="stat-value">73%</div>
+      <div class="stat-delta">vs. pre-automation baseline</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Avg. Sync Latency</div>
+      <div class="stat-value">340<span style="font-size:14px;color:var(--dim);">ms</span></div>
+      <div class="stat-delta warn">↑ 12ms from last week</div>
+    </div>
+  </div>
+
+  <!-- Signature: live integration flow -->
+  <div class="flow">
+    <div class="flow-node">
+      <div class="node-box">CRM</div>
+      <div class="node-label">Salesforce</div>
+    </div>
+    <div class="flow-line"></div>
+    <div class="flow-node">
+      <div class="node-box">ERP</div>
+      <div class="node-label">NetSuite</div>
+    </div>
+    <div class="flow-line rev"></div>
+    <div class="flow-node">
+      <div class="node-box core">API</div>
+      <div class="node-label">Sync&nbsp;Core<br>+&nbsp;OAuth&nbsp;2.0</div>
+    </div>
+    <div class="flow-line"></div>
+    <div class="flow-node">
+      <div class="node-box">PAY</div>
+      <div class="node-label">Stripe</div>
+    </div>
+    <div class="flow-line rev"></div>
+    <div class="flow-node">
+      <div class="node-box">HRIS</div>
+      <div class="node-label">Workday</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-title">Integration Status <span class="sub">12 endpoints monitored</span></div>
+      <table>
+        <tr><th>Service</th><th>Type</th><th>Last Sync</th><th>Status</th></tr>
+        <tr>
+          <td><div class="svc"><span class="svc-dot ok"></span>Salesforce CRM</div></td>
+          <td>REST / OAuth2</td><td>12s ago</td>
+          <td><span class="badge ok">healthy</span></td>
+        </tr>
+        <tr>
+          <td><div class="svc"><span class="svc-dot ok"></span>NetSuite ERP</div></td>
+          <td>SOAP → REST</td><td>41s ago</td>
+          <td><span class="badge ok">healthy</span></td>
+        </tr>
+        <tr>
+          <td><div class="svc"><span class="svc-dot deg"></span>Stripe Billing</div></td>
+          <td>REST / Webhook</td><td>2m ago</td>
+          <td><span class="badge deg">rate-limited</span></td>
+        </tr>
+        <tr>
+          <td><div class="svc"><span class="svc-dot ok"></span>Workday HRIS</div></td>
+          <td>REST / OAuth2</td><td>1m ago</td>
+          <td><span class="badge ok">healthy</span></td>
+        </tr>
+        <tr>
+          <td><div class="svc"><span class="svc-dot down"></span>Zendesk Support</div></td>
+          <td>REST / API Key</td><td>18m ago</td>
+          <td><span class="badge down">reconnecting</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Sync Volume <span class="sub">last 7 days</span></div>
+      <div class="bars">
+        <div class="bar" style="height:52%;"></div>
+        <div class="bar" style="height:68%;"></div>
+        <div class="bar" style="height:44%;"></div>
+        <div class="bar" style="height:80%;"></div>
+        <div class="bar" style="height:61%;"></div>
+        <div class="bar" style="height:35%;"></div>
+        <div class="bar" style="height:90%;"></div>
+      </div>
+      <div class="bar-labels">
+        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr;">
+    <div class="panel">
+      <div class="panel-title">Event Log <span class="sub">real-time onboarding & sync events</span></div>
+      <div class="log">
+        <div class="log-row"><span class="log-time">14:22:07</span><span class="log-tag sync">SYNC</span><span>Customer record batch (312 rows) pushed CRM → ERP</span></div>
+        <div class="log-row"><span class="log-time">14:21:44</span><span class="log-tag auth">AUTH</span><span>OAuth2 token refreshed for Workday HRIS service account</span></div>
+        <div class="log-row"><span class="log-time">14:20:58</span><span class="log-tag sync">SYNC</span><span>New customer onboarding workflow triggered: acct #48291</span></div>
+        <div class="log-row"><span class="log-time">14:19:33</span><span class="log-tag err">ERR</span><span>Zendesk webhook timeout — retry scheduled in 60s (attempt 3/5)</span></div>
+        <div class="log-row"><span class="log-time">14:18:02</span><span class="log-tag sync">SYNC</span><span>Invoice data reconciled between Stripe and NetSuite ledgers</span></div>
+        <div class="log-row"><span class="log-time">14:16:47</span><span class="log-tag auth">AUTH</span><span>New service credential issued for Salesforce integration user</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Microservices <span class="sub">modular onboarding & sync architecture</span></div>
+    <div class="services-grid">
+      <div class="svc-card">
+        <div class="svc-card-top"><span class="svc-card-name">onboarding-svc</span><span class="badge ok">up</span></div>
+        <div class="svc-card-meta">req/s <b>142</b> · p99 <b>210ms</b></div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-card-top"><span class="svc-card-name">sync-orchestrator</span><span class="badge ok">up</span></div>
+        <div class="svc-card-meta">req/s <b>388</b> · p99 <b>95ms</b></div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-card-top"><span class="svc-card-name">auth-gateway</span><span class="badge ok">up</span></div>
+        <div class="svc-card-meta">req/s <b>512</b> · p99 <b>40ms</b></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>ENTERPRISE API INTEGRATION PLATFORM · POSTGRESQL 15 · DOCKERIZED · JWT-SECURED INTERNAL SERVICES</footer>
+</div>
+</body>
+</html>
